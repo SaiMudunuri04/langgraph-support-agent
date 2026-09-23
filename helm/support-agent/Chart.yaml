@@ -1,0 +1,6 @@
+apiVersion: v2
+name: support-agent
+description: LangGraph customer-support copilot API
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

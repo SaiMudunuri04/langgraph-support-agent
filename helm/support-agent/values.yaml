@@ -1,0 +1,28 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/saimudunuri04/langgraph-support-agent
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8000
+
+serviceAccount:
+  create: true
+  name: ""
+
+# Non-secret config. Secrets (LangSmith key, AWS creds) are intentionally NOT
+# here: the app reads them from AWS Secrets Manager at runtime (IRSA).
+env:
+  MOCK_MODE: "true"
+  LOG_LEVEL: "info"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

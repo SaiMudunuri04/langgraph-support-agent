@@ -1,0 +1,25 @@
+# Argo CD GitOps Application.
+# Prerequisites: Argo CD installed; this repo added as a source repo.
+# Replace <CLUSTER> / namespace to match your environment.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: langgraph-support-agent
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/SaiMudunuri04/langgraph-support-agent.git
+    targetRevision: HEAD
+    path: helm/support-agent
+    helm:
+      valueFiles: []
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ai-agents
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

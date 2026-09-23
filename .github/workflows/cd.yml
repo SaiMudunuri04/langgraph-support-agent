@@ -1,0 +1,57 @@
+name: CD
+
+# On merge to main: re-run tests, then build the Docker image and push it to
+# GHCR (ghcr.io/saimudunuri04/langgraph-support-agent) tagged with the commit
+# SHA and `latest`. No extra secrets needed: uses GITHUB_TOKEN.
+# Argo CD (argocd/application.yaml) then syncs the new image into the cluster.
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      MOCK_MODE: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run test suite (mock mode)
+        run: python -m pytest tests/ -q
+      - name: Run golden-set eval (mock mode)
+        run: python eval/run_eval.py
+
+  build-push:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/saimudunuri04/langgraph-support-agent
+          tags: |
+            type=sha
+            type=raw,value=latest
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

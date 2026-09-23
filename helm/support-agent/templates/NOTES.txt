@@ -1,0 +1,8 @@
+{{ .Chart.Name }} is deployed!
+Endpoint: http://{{ .Release.Name }}:{{ .Values.service.port }}/chat
+Health:   http://{{ .Release.Name }}:{{ .Values.service.port }}/health
+
+Try it:
+  kubectl port-forward svc/{{ .Release.Name }} 8000:{{ .Values.service.port }}
+  curl -X POST localhost:8000/chat -H 'Content-Type: application/json' \
+    -d '{"message": "What is your refund policy?"}'
